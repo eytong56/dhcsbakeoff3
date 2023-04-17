@@ -21,6 +21,39 @@ PImage watch;
 //Variables for my silly implementation. You can delete this:
 char currentLetter = 'a';
 
+int screenWidth = 800;
+int screenHeight = 800;
+
+float keyWidth = 12;
+float keyHeight = 15;
+float keyScale = 1.3;
+float keyWSpacing = 12.5;
+float keyHSpacing = keyHeight + 2;
+float spaceW = 80;
+float delW = 20;
+
+float leftEdge;
+float topEdge;
+float yOffset;
+
+private class Key 
+{
+  float x = 0;
+  float y = 0;
+  float w = keyWidth;
+  float h = keyHeight;
+  char label = 'a';
+}
+
+ArrayList<Key> keys = new ArrayList<Key>();
+char[] letters = {'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ' ', '<'};
+
+boolean isMouseHover(float x, float y, float w, float h) //simple function to do hit testing
+{
+  return (mouseX > x - w/2 && mouseX< x + w/2 && mouseY > y - h/2 && mouseY< y + h/2); //check to see if it is in button bounds
+}
+
+
 //You can modify anything in here. This is just a basic implementation.
 void setup()
 {
@@ -33,16 +66,54 @@ void setup()
   size(800, 800); //Sets the size of the app. You should modify this to your device's native size. Many phones today are 1080 wide by 1920 tall.
   textFont(createFont("Arial", 24)); //set the font to arial 24. Creating fonts is expensive, so make difference sizes once in setup, not draw
   noStroke(); //my code doesn't use any strokes
+  
+  leftEdge = width / 2 - sizeOfInputArea / 2 + 1;
+  topEdge = height / 2 - sizeOfInputArea / 2;
+  yOffset = height/2;
+
+  
+  // Set-up keyboard keys
+  for (int i = 0; i < letters.length; i++) 
+  {
+    Key k = new Key();
+    if (i < 10) {
+      k.x = leftEdge + ((sizeOfInputArea - keyWSpacing * 9) / 2) + i * keyWSpacing;
+      k.y = yOffset + 0 * keyHSpacing;
+    }
+    else if (i < 19) {
+      k.x = leftEdge + ((sizeOfInputArea - keyWSpacing * 8) / 2) + (i-10) * keyWSpacing;
+      k.y = yOffset + 1 * keyHSpacing;
+    }
+    else if (i < 26) {
+      k.x = leftEdge + ((sizeOfInputArea - keyWSpacing * 6) / 2) + (i-19) * keyWSpacing;
+      k.y = yOffset + 2 * keyHSpacing;
+    }
+    else if (i == 26) {
+      k.x = leftEdge + (sizeOfInputArea / 2);
+      k.y = yOffset + 3 * keyHSpacing;
+      k.w = spaceW;
+    }
+    else {
+      k.x = leftEdge + (sizeOfInputArea / 2) + spaceW / 2 + delW / 2;
+      k.y = yOffset + 3 * keyHSpacing;
+      k.w = delW;
+    }
+    k.label = letters[i];
+    keys.add(k);
+    println("Added letter " + k.label + " at " + k.x + ", " + k.y + " to keys");
+  }
 }
 
 //You can modify anything in here. This is just a basic implementation.
 void draw()
 {
+  rectMode(CENTER);
   background(255); //clear background
   drawWatch(); //draw watch background
   fill(100);
-  rect(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2, sizeOfInputArea, sizeOfInputArea); //input area should be 1" by 1"
-
+  rect(width/2, height/2, sizeOfInputArea, sizeOfInputArea); //input area should be 1" by 1"
+  
+  textSize(36);
   if (finishTime!=0)
   {
     fill(128);
@@ -55,7 +126,7 @@ void draw()
   {
     fill(128);
     textAlign(CENTER);
-    text("Click to start time!", 280, 150); //display this messsage until the user clicks!
+    text("Click to start time!", width/2, 150); //display this messsage until the user clicks!
   }
 
   if (startTime==0 & mousePressed)
@@ -66,65 +137,86 @@ void draw()
   if (startTime!=0)
   {
     //feel free to change the size and position of the target/entered phrases and next button 
-    textAlign(LEFT); //align the text left
+    textAlign(CENTER); //align the text center
+    fill(255);
+    text("Phrase " + (currTrialNum+1) + " of " + totalTrialNum, width/2, 50); //draw the trial count
     fill(128);
-    text("Phrase " + (currTrialNum+1) + " of " + totalTrialNum, 70, 50); //draw the trial count
-    fill(128);
-    text("Target:   " + currentPhrase, 70, 100); //draw the target string
-    text("Entered:  " + currentTyped +"|", 70, 140); //draw what the user has entered thus far 
+    text("Target:   " + currentPhrase, width/2, 100); //draw the target string
+    fill(0);
+    text("Entered:  " + currentTyped +"|", width/2, 140); //draw what the user has entered thus far 
 
     //draw very basic next button
     fill(255, 0, 0);
-    rect(600, 600, 200, 200); //draw next button
+    rect(width - 100, height - 100, 200, 200); //draw next button
     fill(255);
-    text("NEXT > ", 650, 650); //draw next label
-
-    //my draw code
-    fill(255, 0, 0); //red button
-    rect(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2+sizeOfInputArea/2, sizeOfInputArea/2, sizeOfInputArea/2); //draw left red button
-    fill(0, 255, 0); //green button
-    rect(width/2-sizeOfInputArea/2+sizeOfInputArea/2, height/2-sizeOfInputArea/2+sizeOfInputArea/2, sizeOfInputArea/2, sizeOfInputArea/2); //draw right green button
-    textAlign(CENTER);
-    fill(200);
-    text("" + currentLetter, width/2, height/2-sizeOfInputArea/4); //draw current letter
+    text("NEXT > ", width - 100, height - 100); //draw next label
   }
+  
+  // Drawing the keyboard
+  for (int i = 0; i < 28; i++) 
+  {
+    Key k = keys.get(i);
+    float scale = 1;
+    stroke(0);
+    fill(255);
+    if (isMouseHover(k.x, k.y, k.w, k.h)) {
+      fill(200);
+      scale = keyScale;
+    }
+    rect(k.x, k.y, k.w, k.h * scale);
+    textAlign(CENTER, CENTER);
+    noStroke();
+    fill(0);
+    textSize(k.w * scale);
+    text(k.label, k.x, k.y - 3); //draw current letter
+  }
+  
+    //fill(0);
+    //ellipse(leftEdge + (sizeOfInputArea - keyWSpacing * 9) / 2, yOffset, 10, 10);
 }
 
-//my terrible implementation you can entirely replace
-boolean didMouseClick(float x, float y, float w, float h) //simple function to do hit testing
-{
-  return (mouseX > x && mouseX<x+w && mouseY>y && mouseY<y+h); //check to see if it is in button bounds
-}
-
-//my terrible implementation you can entirely replace
 void mousePressed()
 {
-  if (didMouseClick(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2+sizeOfInputArea/2, sizeOfInputArea/2, sizeOfInputArea/2)) //check if click in left button
-  {
-    currentLetter --;
-    if (currentLetter<'_') //wrap around to z
-      currentLetter = 'z';
+  for (int i = 0; i < letters.length; i++) {
+    Key k = keys.get(i);
+    if (isMouseHover(k.x, k.y, k.w, k.h)) {
+      char currLetter = k.label;
+      if (currLetter == '<') {
+        if (currentTyped.length() > 0) {
+          currentTyped = currentTyped.substring(0, currentTyped.length()-1);
+        }
+        break;
+      }
+      currentTyped += k.label;
+      break;
+    }
   }
+  //if (didMouseClick(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2+sizeOfInputArea/2, sizeOfInputArea/2, sizeOfInputArea/2)) //check if click in left button
+  //{
+  //  currentLetter --;
+  //  if (currentLetter<'_') //wrap around to z
+  //    currentLetter = 'z';
+  //}
 
-  if (didMouseClick(width/2-sizeOfInputArea/2+sizeOfInputArea/2, height/2-sizeOfInputArea/2+sizeOfInputArea/2, sizeOfInputArea/2, sizeOfInputArea/2)) //check if click in right button
-  {
-    currentLetter ++;
-    if (currentLetter>'z') //wrap back to space (aka underscore)
-      currentLetter = '_';
-  }
+  //if (didMouseClick(width/2-sizeOfInputArea/2+sizeOfInputArea/2, height/2-sizeOfInputArea/2+sizeOfInputArea/2, sizeOfInputArea/2, sizeOfInputArea/2)) //check if click in right button
+  //{
+  //  currentLetter ++;
+  //  if (currentLetter>'z') //wrap back to space (aka underscore)
+  //    currentLetter = '_';
+  //}
 
-  if (didMouseClick(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2, sizeOfInputArea, sizeOfInputArea/2)) //check if click occured in letter area
-  {
-    if (currentLetter=='_') //if underscore, consider that a space bar
-      currentTyped+=" ";
-    else if (currentLetter=='`' & currentTyped.length()>0) //if `, treat that as a delete command
-      currentTyped = currentTyped.substring(0, currentTyped.length()-1);
-    else if (currentLetter!='`') //if not any of the above cases, add the current letter to the typed string
-      currentTyped+=currentLetter;
-  }
+  //if (didMouseClick(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2, sizeOfInputArea, sizeOfInputArea/2)) //check if click occured in letter area
+  //{
+  //  if (currentLetter=='_') //if underscore, consider that a space bar
+  //    currentTyped+=" ";
+  //  else if (currentLetter=='`' & currentTyped.length()>0) //if `, treat that as a delete command
+  //    currentTyped = currentTyped.substring(0, currentTyped.length()-1);
+  //  else if (currentLetter!='`') //if not any of the above cases, add the current letter to the typed string
+  //    currentTyped+=currentLetter;
+  //}
 
   //You are allowed to have a next button outside the 1" area
-  if (didMouseClick(600, 600, 200, 200)) //check if click is in next button
+  if (isMouseHover(600, 600, 200, 200)) //check if click is in next button
   {
     nextTrial(); //if so, advance to next trial
   }
