@@ -152,6 +152,10 @@ void draw()
     text("NEXT > ", width - 100, height - 100); //draw next label
   }
   
+  fill(255);
+  textSize(10);
+  text(currentTyped + "|", width / 2, height / 2 - sizeOfInputArea / 4);
+  
   // Drawing the keyboard
   for (int i = 0; i < 28; i++) 
   {
