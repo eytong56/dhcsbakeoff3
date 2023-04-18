@@ -36,9 +36,15 @@ float leftEdge;
 float topEdge;
 float yOffset;
 
-int currWordNum = 0;
-String[] currPhraseWords;
 String[] currTypedWords;
+
+int phraseTextSize = 24;
+
+float nextButtonX;
+float nextButtonY;
+float nextButtonWidth = 100;
+float nextButtonHeight = 200;
+
 
 private class Key 
 {
@@ -111,6 +117,7 @@ void setup()
 //You can modify anything in here. This is just a basic implementation.
 void draw()
 {
+  noStroke();
   rectMode(CENTER);
   background(255); //clear background
   drawWatch(); //draw watch background
@@ -142,42 +149,35 @@ void draw()
   {
     //feel free to change the size and position of the target/entered phrases and next button 
     textAlign(CENTER); //align the text center
-    fill(255);
-    text("Phrase " + (currTrialNum+1) + " of " + totalTrialNum, width/2, 50); //draw the trial count
-    fill(128);
-    text("Target:   " + currentPhrase, width/2, 100); //draw the target string
+    textSize(phraseTextSize);
     fill(0);
-    text("Entered:  " + currentTyped +"|", width/2, 140); //draw what the user has entered thus far 
-
+    text("Phrase " + (currTrialNum+1) + " of " + totalTrialNum, width/2, height / 2 - sizeOfInputArea - 100); //draw the trial count
+    fill(128);
+    text("Target: " + currentPhrase, width/2, height / 2 - sizeOfInputArea - 50); //draw the target string
+    //text("Target: " + currentPhrase, width/2, height - sizeOfInputArea - 100); //draw the target string
+    fill(0);
+    text("Entered: " + currentTyped +"|", width/2, height / 2 - sizeOfInputArea); //draw what the user has entered thus far 
+    
+    stroke(1);
     //draw very basic next button
-    fill(255, 0, 0);
-    rect(width - 100, height - 100, 200, 200); //draw next button
-    fill(255);
-    text("NEXT > ", width - 100, height - 100); //draw next label
+    nextButtonX = width - 200;
+    nextButtonY = height / 2;
+    
+    fill(0, 255, 0);
+    
+    if (isMouseHover(nextButtonX, nextButtonY, nextButtonWidth, nextButtonHeight)) {
+      fill(0, 150, 0);
+    }
+    rect(nextButtonX, nextButtonY, nextButtonWidth, nextButtonHeight); //draw next button
+    fill(0);
+    text("NEXT >", nextButtonX, nextButtonY); //draw next label
   }
   
-  currPhraseWords = currentPhrase.split("(?<= )");
   currTypedWords = currentTyped.split("(?<= )");
 
-  textAlign(LEFT);
   textSize(18);
-  
-  String currPhraseW = currPhraseWords[currWordNum];
-  String currTypedW = "";
-  if (currWordNum < currTypedWords.length) {
-    currTypedW = currTypedWords[currWordNum];
-  }
-  
-  fill(200);
-  text(currPhraseW, width / 2 - sizeOfInputArea / 2 + 20, height / 2 - sizeOfInputArea / 4);
-  
-  fill(255, 0, 0);
-  if (currPhraseW.contains(currTypedW)){
-    fill(0, 255, 0);
-  }
-  text(currTypedW, width / 2 - sizeOfInputArea / 2 + 20, height / 2 - sizeOfInputArea / 4);
- 
-  //text(currTypedWords[currTypedWords.length - 1]  + "|", width / 2, height / 2 - sizeOfInputArea / 4);
+  fill(255);
+  text(currTypedWords[currTypedWords.length - 1]  + "|", width / 2, height / 2 - sizeOfInputArea / 4);
   
   // Drawing the keyboard
   for (int i = 0; i < 28; i++) 
@@ -219,14 +219,8 @@ void mousePressed()
     Key k = keys.get(i);
     if (isMouseHover(k.x, k.y, k.w, k.h)) {
       char currLetter = k.label;
-      if (currLetter == ' ') {
-        currWordNum = min(currWordNum + 1, currPhraseWords.length - 1);
-      }
-      else if (currLetter == '<') {
+      if (currLetter == '<') {
         if (currentTyped.length() > 0) {
-          if (currentTyped.charAt(currentTyped.length() - 1) == ' ') {
-            currWordNum--;
-          }
           currentTyped = currentTyped.substring(0, currentTyped.length()-1);
         }
         break;
@@ -238,7 +232,7 @@ void mousePressed()
 
 
   //You are allowed to have a next button outside the 1" area
-  if (isMouseHover(width - 100, height - 100, 200, 200)) //check if click is in next button
+  if (isMouseHover(nextButtonX, nextButtonY, nextButtonWidth, nextButtonHeight)) //check if click is in next button
   {
     nextTrial(); //if so, advance to next trial
   }
@@ -304,8 +298,6 @@ void nextTrial()
   currentTyped = ""; //clear what is currently typed preparing for next trial
   currentPhrase = phrases[currTrialNum]; // load the next phrase!
   //currentPhrase = "abc"; // uncomment this to override the test phrase (useful for debugging)
-  
-  currWordNum = 0;
 }
 
 
