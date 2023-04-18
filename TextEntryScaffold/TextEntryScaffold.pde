@@ -304,6 +304,8 @@ void nextTrial()
   currentTyped = ""; //clear what is currently typed preparing for next trial
   currentPhrase = phrases[currTrialNum]; // load the next phrase!
   //currentPhrase = "abc"; // uncomment this to override the test phrase (useful for debugging)
+  
+  currWordNum = 0;
 }
 
 
