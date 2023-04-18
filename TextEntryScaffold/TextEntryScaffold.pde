@@ -29,12 +29,16 @@ float keyHeight = 15;
 float keyScale = 1.3;
 float keyWSpacing = 12.5;
 float keyHSpacing = keyHeight + 2;
-float spaceW = 80;
-float delW = 20;
+float spaceW = 90;
+float delW = 15;
 
 float leftEdge;
 float topEdge;
 float yOffset;
+
+int currWordNum = 0;
+String[] currPhraseWords;
+String[] currTypedWords;
 
 private class Key 
 {
@@ -152,27 +156,57 @@ void draw()
     text("NEXT > ", width - 100, height - 100); //draw next label
   }
   
-  fill(255);
-  textSize(10);
-  text(currentTyped + "|", width / 2, height / 2 - sizeOfInputArea / 4);
+  currPhraseWords = currentPhrase.split("(?<= )");
+  currTypedWords = currentTyped.split("(?<= )");
+
+  textAlign(LEFT);
+  textSize(18);
+  
+  String currPhraseW = currPhraseWords[currWordNum];
+  String currTypedW = "";
+  if (currWordNum < currTypedWords.length) {
+    currTypedW = currTypedWords[currWordNum];
+  }
+  
+  fill(200);
+  text(currPhraseW, width / 2 - sizeOfInputArea / 2 + 20, height / 2 - sizeOfInputArea / 4);
+  
+  fill(255, 0, 0);
+  if (currPhraseW.contains(currTypedW)){
+    fill(0, 255, 0);
+  }
+  text(currTypedW, width / 2 - sizeOfInputArea / 2 + 20, height / 2 - sizeOfInputArea / 4);
+ 
+  //text(currTypedWords[currTypedWords.length - 1]  + "|", width / 2, height / 2 - sizeOfInputArea / 4);
   
   // Drawing the keyboard
   for (int i = 0; i < 28; i++) 
   {
     Key k = keys.get(i);
     float scale = 1;
+    float hoverOffset = 0;
     stroke(0);
-    fill(255);
-    if (isMouseHover(k.x, k.y, k.w, k.h)) {
-      fill(200);
-      scale = keyScale;
-    }
+    fill(200);
+    //if (isMouseHover(k.x, k.y, k.w, k.h)) {
+    //  fill(200);
+    //  scale = keyScale;
+    //}
     rect(k.x, k.y, k.w, k.h * scale);
+    fill(50);
+    if (isMouseHover(k.x, k.y, k.w, k.h)) {
+      fill(255);
+      rect(k.x, k.y, k.w, k.h);
+      if (i != 26) {
+        scale = keyScale;
+        hoverOffset = keyHeight;
+        noStroke();
+        rect(k.x, k.y - hoverOffset, k.w * scale, k.h * scale);
+        fill(0);
+      }
+    }
     textAlign(CENTER, CENTER);
-    noStroke();
-    fill(0);
     textSize(k.w * scale);
-    text(k.label, k.x, k.y - 3); //draw current letter
+    text(k.label, k.x, k.y - 3 - hoverOffset); //draw current letter
   }
   
     //fill(0);
@@ -185,8 +219,14 @@ void mousePressed()
     Key k = keys.get(i);
     if (isMouseHover(k.x, k.y, k.w, k.h)) {
       char currLetter = k.label;
-      if (currLetter == '<') {
+      if (currLetter == ' ') {
+        currWordNum = min(currWordNum + 1, currPhraseWords.length - 1);
+      }
+      else if (currLetter == '<') {
         if (currentTyped.length() > 0) {
+          if (currentTyped.charAt(currentTyped.length() - 1) == ' ') {
+            currWordNum--;
+          }
           currentTyped = currentTyped.substring(0, currentTyped.length()-1);
         }
         break;
@@ -195,32 +235,10 @@ void mousePressed()
       break;
     }
   }
-  //if (didMouseClick(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2+sizeOfInputArea/2, sizeOfInputArea/2, sizeOfInputArea/2)) //check if click in left button
-  //{
-  //  currentLetter --;
-  //  if (currentLetter<'_') //wrap around to z
-  //    currentLetter = 'z';
-  //}
 
-  //if (didMouseClick(width/2-sizeOfInputArea/2+sizeOfInputArea/2, height/2-sizeOfInputArea/2+sizeOfInputArea/2, sizeOfInputArea/2, sizeOfInputArea/2)) //check if click in right button
-  //{
-  //  currentLetter ++;
-  //  if (currentLetter>'z') //wrap back to space (aka underscore)
-  //    currentLetter = '_';
-  //}
-
-  //if (didMouseClick(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2, sizeOfInputArea, sizeOfInputArea/2)) //check if click occured in letter area
-  //{
-  //  if (currentLetter=='_') //if underscore, consider that a space bar
-  //    currentTyped+=" ";
-  //  else if (currentLetter=='`' & currentTyped.length()>0) //if `, treat that as a delete command
-  //    currentTyped = currentTyped.substring(0, currentTyped.length()-1);
-  //  else if (currentLetter!='`') //if not any of the above cases, add the current letter to the typed string
-  //    currentTyped+=currentLetter;
-  //}
 
   //You are allowed to have a next button outside the 1" area
-  if (isMouseHover(600, 600, 200, 200)) //check if click is in next button
+  if (isMouseHover(width - 100, height - 100, 200, 200)) //check if click is in next button
   {
     nextTrial(); //if so, advance to next trial
   }
