@@ -36,6 +36,9 @@ float leftEdge;
 float topEdge;
 float yOffset;
 
+String[] common;
+String mostCommon = "";
+
 private class Key 
 {
   float x = 0;
@@ -102,6 +105,9 @@ void setup()
     keys.add(k);
     println("Added letter " + k.label + " at " + k.x + ", " + k.y + " to keys");
   }
+  
+  //common = loadStrings("count_2l.txt"); //load the common letter combos into memory
+  //println(((common[0]).split("  "))[0]);
 }
 
 //You can modify anything in here. This is just a basic implementation.
@@ -152,6 +158,11 @@ void draw()
     text("NEXT > ", width - 100, height - 100); //draw next label
   }
   
+  fill(255);
+  textSize(10);
+  mostCommon = currentTyped + "|";
+  text(mostCommon, width / 2, height / 2 - sizeOfInputArea / 4);
+  
   // Drawing the keyboard
   for (int i = 0; i < 28; i++) 
   {
@@ -175,6 +186,19 @@ void draw()
     //ellipse(leftEdge + (sizeOfInputArea - keyWSpacing * 9) / 2, yOffset, 10, 10);
 }
 
+//String searchCommon() {
+//  String maxString = ""; 
+//  int max = 0;
+//  for (int i = 0; i < common.length; i++) {
+//    if ((common[i].contains(currentTyped)) && common[i].freq > max) {
+//      maxString = common[i];
+//      max = common[i].freq;
+//    }
+//  }
+//  return maxString;
+//}
+
+
 void mousePressed()
 {
   for (int i = 0; i < letters.length; i++) {
@@ -191,6 +215,8 @@ void mousePressed()
       break;
     }
   }
+  
+  //mostCommon = searchCommon();
   //if (didMouseClick(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2+sizeOfInputArea/2, sizeOfInputArea/2, sizeOfInputArea/2)) //check if click in left button
   //{
   //  currentLetter --;
